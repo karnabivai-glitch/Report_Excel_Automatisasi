@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExcelPro Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --primary: #FF6B35;
+    --primary-light: #FFF0EB;
+    --primary-dark: #D94F1E;
+    --accent: #00C896;
+    --accent-light: #E0FBF4;
+    --blue: #3B82F6;
+    --blue-light: #EFF6FF;
+    --purple: #8B5CF6;
+    --purple-light: #F5F3FF;
+    --yellow: #F59E0B;
+    --yellow-light: #FFFBEB;
+    --red: #EF4444;
+    --red-light: #FEF2F2;
+    --bg: #F8F7FF;
+    --surface: #FFFFFF;
+    --surface2: #F3F2FA;
+    --text: #1A1A2E;
+    --text2: #6B6B8A;
+    --text3: #A0A0BB;
+    --border: #E8E6F5;
+    --shadow: 0 4px 24px rgba(100,80,180,0.08);
+    --shadow-sm: 0 2px 8px rgba(100,80,180,0.06);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    z-index: 100;
+    padding: 0 0 20px;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 18px; flex-shrink: 0;
+  }
+
+  .logo-text { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; line-height: 1.2; }
+  .logo-text span { color: var(--primary); }
+  .logo-sub { font-size: 11px; color: var(--text2); font-weight: 400; }
+
+  .sidebar-nav { padding: 16px 12px; flex: 1; overflow-y: auto; }
+  .nav-section-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 10px 6px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.15s;
+    color: var(--text2); font-size: 14px; font-weight: 500;
+    margin-bottom: 2px; user-select: none;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--primary-light); color: var(--primary); }
+  .nav-item.active .nav-icon { color: var(--primary); }
+  .nav-icon { font-size: 18px; width: 20px; text-align: center; flex-shrink: 0; }
+  .nav-badge { margin-left: auto; background: var(--primary); color: white; font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+
+  .sidebar-footer {
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .gas-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; transition: background 0.3s; }
+  .gas-status-dot.connected { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .gas-status-dot.error { background: var(--red); }
+  .gas-status-text { font-size: 12px; color: var(--text2); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 260px;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(248,247,255,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .topbar-title { font-size: 18px; font-weight: 700; }
+  .topbar-subtitle { font-size: 13px; color: var(--text2); margin-top: 1px; }
+
+  .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.15s; font-family: inherit;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,53,0.3); }
+  .btn-outline { background: white; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--surface2); border-color: #ccc; }
+  .btn-accent { background: var(--accent); color: white; }
+  .btn-accent:hover { background: #00a87e; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid transparent; }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: var(--radius-xs); }
+  .btn-icon { padding: 9px; }
+
+  .content { padding: 28px; flex: 1; }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── SETTINGS MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: var(--radius);
+    padding: 28px; width: 480px; max-width: 95vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .form-group input, .form-group select {
+    width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px; font-family: inherit;
+    color: var(--text); background: white; transition: border 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+  .form-group .hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  }
+  .card-header {
+    padding: 20px 24px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 15px; font-weight: 700; }
+  .card-subtitle { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .card-body { padding: 20px 24px; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm);
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; right: -10px; top: -10px;
+    width: 80px; height: 80px; border-radius: 50%; opacity: 0.08;
+  }
+  .stat-card.orange::before { background: var(--primary); }
+  .stat-card.green::before { background: var(--accent); }
+  .stat-card.blue::before { background: var(--blue); }
+  .stat-card.purple::before { background: var(--purple); }
+
+  .stat-icon { font-size: 22px; margin-bottom: 12px; }
+  .stat-card.orange .stat-icon { color: var(--primary); }
+  .stat-card.green .stat-icon { color: var(--accent); }
+  .stat-card.blue .stat-icon { color: var(--blue); }
+  .stat-card.purple .stat-icon { color: var(--purple); }
+
+  .stat-value { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .stat-change { font-size: 11px; margin-top: 6px; }
+  .stat-change.up { color: var(--accent); }
+  .stat-change.down { color: var(--red); }
+
+  /* ── UPLOAD AREA ── */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 48px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--primary); background: var(--primary-light); }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { font-size: 48px; color: var(--primary); margin-bottom: 12px; }
+  .upload-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .upload-subtitle { font-size: 13px; color: var(--text2); }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--surface2); padding: 10px 14px;
+    text-align: left; font-size: 11px; font-weight: 600;
+    color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  /* ── BADGE ── */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-orange { background: var(--primary-light); color: var(--primary); }
+  .badge-green { background: var(--accent-light); color: #00875E; }
+  .badge-blue { background: var(--blue-light); color: #1E5FC4; }
+  .badge-red { background: var(--red-light); color: #B91C1C; }
+  .badge-yellow { background: var(--yellow-light); color: #92400E; }
+  .badge-purple { background: var(--purple-light); color: #6D28D9; }
+  .badge-gray { background: var(--surface2); color: var(--text2); }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .mb-20 { margin-bottom: 20px; }
+  .mb-12 { margin-bottom: 12px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+
+  /* ── TOAST ── */
+  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--text); color: white; padding: 12px 18px;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px;
+    animation: slideIn 0.3s ease; min-width: 240px;
+  }
+  .toast.success { background: #065F46; }
+  .toast.error { background: #991B1B; }
+  .toast.info { background: #1E40AF; }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* ── LOADING SPINNER ── */
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── FEATURE CARDS ── */
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .feature-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(100,80,180,0.12); border-color: transparent; }
+  .feature-card::after { content: ''; position: absolute; inset: 0; border-radius: var(--radius); border: 2px solid transparent; transition: border 0.2s; }
+  .feature-card:hover::after { border-color: var(--primary); }
+  .feature-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; }
+  .feature-icon.orange { background: var(--primary-light); color: var(--primary); }
+  .feature-icon.green { background: var(--accent-light); color: var(--accent); }
+  .feature-icon.blue { background: var(--blue-light); color: var(--blue); }
+  .feature-icon.purple { background: var(--purple-light); color: var(--purple); }
+  .feature-icon.yellow { background: var(--yellow-light); color: var(--yellow); }
+  .feature-icon.red { background: var(--red-light); color: var(--red); }
+  .feature-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .feature-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* ── CONFIG PANEL ── */
+  .config-panel {
+    background: var(--primary-light); border: 1px solid #FFD4C2;
+    border-radius: var(--radius); padding: 16px 20px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .config-panel i { color: var(--primary); font-size: 20px; }
+  .config-text { flex: 1; }
+  .config-text strong { font-size: 13px; color: var(--primary-dark); display: block; }
+  .config-text span { font-size: 12px; color: #A04020; }
+
+  /* ── ANALYSIS RESULT ── */
+  .analysis-section { margin-bottom: 24px; }
+  .analysis-section h4 { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+  .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .kv-item { background: var(--surface2); padding: 12px 14px; border-radius: var(--radius-sm); }
+  .kv-key { font-size: 11px; color: var(--text3); font-weight: 500; margin-bottom: 4px; }
+  .kv-val { font-size: 15px; font-weight: 700; color: var(--text); }
+
+  /* ── DISCREPANCY ── */
+  .disc-filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .disc-filters input, .disc-filters select {
+    padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px; font-family: inherit;
+    color: var(--text); background: white;
+  }
+  .disc-filters input { flex: 1; min-width: 180px; }
+  .disc-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .disc-sum-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+  .disc-sum-val { font-size: 22px; font-weight: 700; }
+  .disc-sum-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* ── REPORT BUILDER ── */
+  .report-options { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .report-opt {
+    border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 18px; cursor: pointer; transition: all 0.15s; position: relative;
+  }
+  .report-opt:hover { border-color: var(--primary); background: var(--primary-light); }
+  .report-opt.selected { border-color: var(--primary); background: var(--primary-light); }
+  .report-opt .check { position: absolute; top: 12px; right: 12px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; }
+  .report-opt.selected .check { background: var(--primary); border-color: var(--primary); color: white; font-size: 11px; }
+  .report-opt-icon { font-size: 24px; margin-bottom: 8px; }
+  .report-opt-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .report-opt-desc { font-size: 12px; color: var(--text2); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 60px 40px; color: var(--text2); }
+  .empty-state i { font-size: 52px; color: var(--text3); margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; line-height: 1.6; }
+
+  /* ── RESPONSIVE BREAKPOINTS ── */
+  @media (max-width: 1100px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature-grid { grid-template-columns: 1fr 1fr; }
+    .disc-summary { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .report-options { grid-template-columns: 1fr; }
+    .disc-summary { grid-template-columns: 1fr 1fr; }
+    .content { padding: 16px; }
+  }
+
+  /* ── HISTORY LIST ── */
+  .history-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .history-info { flex: 1; }
+  .history-name { font-size: 13px; font-weight: 600; }
+  .history-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── SHEET SELECTOR ── */
+  .sheet-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .sheet-tab {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1.5px solid var(--border); background: white;
+    color: var(--text2); transition: all 0.15s;
+  }
+  .sheet-tab:hover { border-color: var(--primary); color: var(--primary); }
+  .sheet-tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  /* ── CHART PLACEHOLDER ── */
+  .chart-placeholder {
+    height: 200px; background: var(--surface2); border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text3); font-size: 13px; flex-direction: column; gap: 8px;
+  }
+  .chart-placeholder i { font-size: 36px; }
+
+  /* Mini bar chart */
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; padding: 0 4px; }
+  .mini-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--primary); opacity: 0.7; transition: opacity 0.2s; }
+  .mini-bar:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="ti ti-table-options"></i></div>
+    <div>
+      <div class="logo-text">Excel<span>Pro</span></div>
+      <div class="logo-sub">Manager v1.0</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Menu Utama</div>
+    <div class="nav-item active" onclick="showView('dashboard')">
+      <i class="ti ti-layout-dashboard nav-icon"></i> Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('upload')">
+      <i class="ti ti-upload nav-icon"></i> Upload File
+      <span class="nav-badge" id="file-count-badge">0</span>
+    </div>
+    <div class="nav-item" onclick="showView('report')">
+      <i class="ti ti-file-analytics nav-icon"></i> Buat Report
+    </div>
+
+    <div class="nav-section-label" style="margin-top:8px">Tools</div>
+    <div class="nav-item" onclick="showView('analysis')">
+      <i class="ti ti-chart-bar nav-icon"></i> Analisa Data
+    </div>
+    <div class="nav-item" onclick="showView('discrepancy')">
+      <i class="ti ti-git-compare nav-icon"></i> Discrepancy
+    </div>
+    <div class="nav-item" onclick="showView('export')">
+      <i class="ti ti-download nav-icon"></i> Export & Download
+    </div>
+
+    <div class="nav-section-label" style="margin-top:8px">Riwayat</div>
+    <div class="nav-item" onclick="showView('history')">
+      <i class="ti ti-history nav-icon"></i> Riwayat Proses
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="gas-status-dot" id="statusDot"></div>
+    <div>
+      <div class="gas-status-text" id="statusText">Belum terhubung ke GAS</div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="viewTitle">Dashboard</div>
+      <div class="topbar-subtitle" id="viewSubtitle">Ringkasan aktivitas dan file Excel Anda</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline btn-icon" onclick="openSettings()" title="Pengaturan GAS">
+        <i class="ti ti-settings"></i>
+      </button>
+      <button class="btn btn-primary" onclick="showView('upload')">
+        <i class="ti ti-plus"></i> Upload File
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ═══════════ DASHBOARD ═══════════ -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card orange">
+          <div class="stat-icon"><i class="ti ti-file-spreadsheet"></i></div>
+          <div class="stat-value" id="stat-files">0</div>
+          <div class="stat-label">File Diupload</div>
+          <div class="stat-change up"><i class="ti ti-trending-up"></i> Siap diproses</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon"><i class="ti ti-file-check"></i></div>
+          <div class="stat-value" id="stat-reports">0</div>
+          <div class="stat-label">Report Dibuat</div>
+          <div class="stat-change up"><i class="ti ti-trending-up"></i> Sesi ini</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon"><i class="ti ti-chart-dots"></i></div>
+          <div class="stat-value" id="stat-analyses">0</div>
+          <div class="stat-label">Analisa Dilakukan</div>
+          <div class="stat-change up"><i class="ti ti-trending-up"></i> Total</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon"><i class="ti ti-git-compare"></i></div>
+          <div class="stat-value" id="stat-discs">0</div>
+          <div class="stat-label">Discrepancy Ditemukan</div>
+          <div class="stat-change down" id="disc-change"><i class="ti ti-alert-circle"></i> Perlu dicek</div>
+        </div>
+      </div>
+
+      <!-- GAS Not Connected Banner -->
+      <div class="config-panel" id="gas-banner" style="display:none">
+        <i class="ti ti-alert-triangle"></i>
+        <div class="config-text">
+          <strong>GAS Backend Belum Terhubung</strong>
+          <span>Klik ikon Settings untuk mengatur URL Google Apps Script Anda</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSettings()">
+          <i class="ti ti-settings"></i> Setup
+        </button>
+      </div>
+
+      <div class="grid-2 mb-20">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Fitur Tersedia</div>
+              <div class="card-subtitle">Klik untuk mulai menggunakan</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="feature-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin: 0;">
+              <div class="feature-card" onclick="showView('upload')" style="padding: 16px;">
+                <div class="feature-icon orange" style="width:38px; height:38px; font-size:18px; margin-bottom: 10px;"><i class="ti ti-upload"></i></div>
+                <div class="feature-name" style="font-size:13px">Upload Excel</div>
+                <div class="feature-desc">Drag & drop file .xlsx / .csv</div>
+              </div>
+              <div class="feature-card" onclick="showView('report')" style="padding: 16px;">
+                <div class="feature-icon green" style="width:38px; height:38px; font-size:18px; margin-bottom: 10px;"><i class="ti ti-file-analytics"></i></div>
+                <div class="feature-name" style="font-size:13px">Buat Report</div>
+                <div class="feature-desc">Summary, pivot, & template</div>
+              </div>
+              <div class="feature-card" onclick="showView('analysis')" style="padding: 16px;">
+                <div class="feature-icon blue" style="width:38px; height:38px; font-size:18px; margin-bottom: 10px;"><i class="ti ti-chart-bar"></i></div>
+                <div class="feature-name" style="font-size:13px">Analisa Data</div>
+                <div class="feature-desc">Statistik & visualisasi</div>
+              </div>
+              <div class="feature-card" onclick="showView('discrepancy')" style="padding: 16px;">
+                <div class="feature-icon red" style="width:38px; height:38px; font-size:18px; margin-bottom: 10px;"><i class="ti ti-git-compare"></i></div>
+                <div class="feature-name" style="font-size:13px">Discrepancy</div>
+                <div class="feature-desc">Bandingkan 2 file Excel</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Riwayat Terakhir</div>
+              <div class="card-subtitle">Aktivitas terbaru</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showView('history')">Lihat Semua</button>
+          </div>
+          <div class="card-body" style="padding-top: 8px;">
+            <div id="recent-history">
+              <div class="empty-state" style="padding: 30px 20px;">
+                <i class="ti ti-inbox"></i>
+                <h3>Belum ada aktivitas</h3>
+                <p>Upload file pertama Anda untuk mulai</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- File List Dashboard -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">File Aktif</div>
+            <div class="card-subtitle">File Excel yang siap diproses</div>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top: 12px;">
+          <div id="dash-file-list">
+            <div class="empty-state" style="padding: 40px;">
+              <i class="ti ti-file-x"></i>
+              <h3>Belum ada file</h3>
+              <p>Upload file Excel terlebih dahulu</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ UPLOAD ═══════════ -->
+    <div class="view" id="view-upload">
+      <div class="upload-zone mb-20" id="dropZone">
+        <input type="file" accept=".xlsx,.xls,.csv" multiple onchange="handleFileSelect(event)" id="fileInput">
+        <div class="upload-icon"><i class="ti ti-cloud-upload"></i></div>
+        <div class="upload-title">Drag & Drop File Excel di sini</div>
+        <div class="upload-subtitle">atau klik untuk memilih file (.xlsx, .xls, .csv)<br>Bisa upload beberapa file sekaligus</div>
+      </div>
+
+      <!-- File Queue -->
+      <div class="card mb-20">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Antrian Upload</div>
+            <div class="card-subtitle">File siap dikirim ke Google Sheets</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="clearQueue()"><i class="ti ti-trash"></i> Hapus Semua</button>
+            <button class="btn btn-primary btn-sm" onclick="uploadAllFiles()" id="upload-btn"><i class="ti ti-upload"></i> Upload Semua</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding-top: 12px;">
+          <div id="file-queue">
+            <div class="empty-state" style="padding: 30px;">
+              <i class="ti ti-files"></i>
+              <h3>Antrian kosong</h3>
+              <p>Pilih atau drop file Excel di atas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uploaded Files -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">File Terupload</div>
+            <div class="card-subtitle">File yang sudah ada di Google Sheets</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="refreshFiles()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <div class="card-body" style="padding-top: 12px;">
+          <div id="uploaded-files-list">
+            <div class="empty-state" style="padding: 30px;">
+              <i class="ti ti-database-off"></i>
+              <h3>Belum ada file terupload</h3>
+              <p>File yang berhasil diupload akan tampil di sini</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ REPORT ═══════════ -->
+    <div class="view" id="view-report">
+      <div class="grid-2 mb-20">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pilih File Sumber</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>File Excel</label>
+              <select id="report-file-select">
+                <option value="">-- Pilih file --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sheet / Tab</label>
+              <select id="report-sheet-select">
+                <option value="">-- Pilih sheet --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Kolom Nilai (angka)</label>
+              <select id="report-value-col">
+                <option value="">-- Otomatis deteksi --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Kolom Group By</label>
+              <select id="report-group-col">
+                <option value="">-- Opsional --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Jenis Report</div>
+          </div>
+          <div class="card-body" style="padding-top: 12px;">
+            <div class="report-options">
+              <div class="report-opt selected" onclick="selectReport(this, 'summary')" data-type="summary">
+                <div class="check"><i class="ti ti-check"></i></div>
+                <div class="report-opt-icon">📊</div>
+                <div class="report-opt-name">Summary Report</div>
+                <div class="report-opt-desc">Ringkasan total, rata-rata, min, max</div>
+              </div>
+              <div class="report-opt" onclick="selectReport(this, 'pivot')" data-type="pivot">
+                <div class="check"></div>
+                <div class="report-opt-icon">🔄</div>
+                <div class="report-opt-name">Pivot Report</div>
+                <div class="report-opt-desc">Rekap data per kategori/grup</div>
+              </div>
+              <div class="report-opt" onclick="selectReport(this, 'comparison')" data-type="comparison">
+                <div class="check"></div>
+                <div class="report-opt-icon">⚖️</div>
+                <div class="report-opt-name">Comparison</div>
+                <div class="report-opt-desc">Perbandingan antar periode/kolom</div>
+              </div>
+              <div class="report-opt" onclick="selectReport(this, 'trend')" data-type="trend">
+                <div class="check"></div>
+                <div class="report-opt-icon">📈</div>
+                <div class="report-opt-name">Trend Report</div>
+                <div class="report-opt-desc">Tren waktu / time series</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="generateReport()">
+              <i class="ti ti-file-analytics"></i> Generate Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Report Result -->
+      <div class="card" id="report-result" style="display:none">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Hasil Report</div>
+            <div class="card-subtitle" id="report-result-meta"></div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="downloadReport('xlsx')"><i class="ti ti-download"></i> XLSX</button>
+            <button class="btn btn-accent btn-sm" onclick="downloadReport('sheet')"><i class="ti ti-brand-google"></i> Sheets</button>
+          </div>
+        </div>
+        <div class="card-body" id="report-result-body"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ ANALYSIS ═══════════ -->
+    <div class="view" id="view-analysis">
+      <div class="grid-2 mb-20">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Konfigurasi Analisa</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>File Excel</label>
+              <select id="analysis-file-select">
+                <option value="">-- Pilih file --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sheet</label>
+              <select id="analysis-sheet-select">
+                <option value="">-- Pilih sheet --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Jenis Analisa</label>
+              <select id="analysis-type">
+                <option value="descriptive">Statistik Deskriptif</option>
+                <option value="correlation">Korelasi Antar Kolom</option>
+                <option value="distribution">Distribusi Data</option>
+                <option value="outlier">Deteksi Outlier</option>
+                <option value="missing">Cek Missing Value</option>
+                <option value="duplicate">Cek Duplikasi</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" style="width:100%;" onclick="runAnalysis()">
+              <i class="ti ti-chart-dots"></i> Jalankan Analisa
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Preview Data</div>
+          </div>
+          <div class="card-body" id="analysis-preview">
+            <div class="empty-state" style="padding: 30px;">
+              <i class="ti ti-table"></i>
+              <h3>Pilih file terlebih dahulu</h3>
+              <p>Preview baris pertama data akan tampil di sini</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analysis Result -->
+      <div id="analysis-result" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Hasil Analisa</div>
+              <div class="card-subtitle" id="analysis-result-meta"></div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="downloadAnalysis()"><i class="ti ti-download"></i> Export</button>
+          </div>
+          <div class="card-body" id="analysis-result-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ DISCREPANCY ═══════════ -->
+    <div class="view" id="view-discrepancy">
+      <div class="grid-2 mb-20">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">File Pertama (Referensi)</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Pilih File A</label>
+              <select id="disc-file-a">
+                <option value="">-- Pilih file --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sheet A</label>
+              <select id="disc-sheet-a"><option value="">-- Pilih sheet --</option></select>
+            </div>
+            <div class="form-group">
+              <label>Kolom Kunci (Key)</label>
+              <select id="disc-key-a"><option value="">-- Pilih kolom kunci --</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">File Kedua (Pembanding)</div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label>Pilih File B</label>
+              <select id="disc-file-b">
+                <option value="">-- Pilih file --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sheet B</label>
+              <select id="disc-sheet-b"><option value="">-- Pilih sheet --</option></select>
+            </div>
+            <div class="form-group">
+              <label>Kolom Kunci (Key)</label>
+              <select id="disc-key-b"><option value="">-- Pilih kolom kunci --</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-20">
+        <div class="card-body" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; flex:1; min-width:200px;">
+            <label>Kolom yang dibandingkan</label>
+            <input type="text" id="disc-compare-cols" placeholder="Contoh: QTY, PRICE (kosong = semua)">
+          </div>
+          <div class="form-group" style="margin:0; flex:1; min-width:200px;">
+            <label>Toleransi Selisih (%)</label>
+            <input type="number" id="disc-tolerance" value="0" min="0" max="100" step="0.1">
+          </div>
+          <div style="margin-top:20px;">
+            <button class="btn btn-primary" onclick="runDiscrepancy()">
+              <i class="ti ti-git-compare"></i> Cek Discrepancy
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disc Result -->
+      <div id="disc-result" style="display:none;">
+        <div class="disc-summary">
+          <div class="disc-sum-item">
+            <div class="disc-sum-val" id="disc-total" style="color: var(--text);">0</div>
+            <div class="disc-sum-label">Total Baris</div>
+          </div>
+          <div class="disc-sum-item">
+            <div class="disc-sum-val" id="disc-match" style="color: var(--accent);">0</div>
+            <div class="disc-sum-label">Match ✓</div>
+          </div>
+          <div class="disc-sum-item">
+            <div class="disc-sum-val" id="disc-diff" style="color: var(--red);">0</div>
+            <div class="disc-sum-label">Berbeda ✗</div>
+          </div>
+          <div class="disc-sum-item">
+            <div class="disc-sum-val" id="disc-missing" style="color: var(--yellow);">0</div>
+            <div class="disc-sum-label">Tidak Ditemukan</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Detail Discrepancy</div>
+            <div style="display:flex; gap:8px;">
+              <select id="disc-filter" onchange="filterDiscResult()" style="padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:12px; font-family:inherit;">
+                <option value="all">Semua</option>
+                <option value="diff">Berbeda saja</option>
+                <option value="missing">Missing saja</option>
+                <option value="match">Match saja</option>
+              </select>
+              <input type="text" id="disc-search-input" placeholder="Cari..." oninput="filterDiscResult()" style="padding:6px 12px; border:1px solid var(--border); border-radius:8px; font-size:12px; font-family:inherit; width:180px;">
+              <button class="btn btn-accent btn-sm" onclick="downloadDiscrepancy()"><i class="ti ti-download"></i> Export</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding-top: 8px;">
+            <div class="table-wrap" id="disc-table-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ EXPORT ═══════════ -->
+    <div class="view" id="view-export">
+      <div class="feature-grid mb-20">
+        <div class="feature-card" onclick="exportAction('xlsx')">
+          <div class="feature-icon orange"><i class="ti ti-file-spreadsheet"></i></div>
+          <div class="feature-name">Export ke XLSX</div>
+          <div class="feature-desc">Download hasil proses sebagai file Excel</div>
+        </div>
+        <div class="feature-card" onclick="exportAction('csv')">
+          <div class="feature-icon green"><i class="ti ti-file-text"></i></div>
+          <div class="feature-name">Export ke CSV</div>
+          <div class="feature-desc">Simpan sebagai file CSV untuk kompatibilitas</div>
+        </div>
+        <div class="feature-card" onclick="exportAction('sheets')">
+          <div class="feature-icon blue"><i class="ti ti-brand-google"></i></div>
+          <div class="feature-name">Kirim ke Sheets</div>
+          <div class="feature-desc">Buat/update Google Sheets dari data ini</div>
+        </div>
+        <div class="feature-card" onclick="exportAction('pdf')">
+          <div class="feature-icon purple"><i class="ti ti-file-type-pdf"></i></div>
+          <div class="feature-name">Export Report PDF</div>
+          <div class="feature-desc">Cetak report dalam format PDF</div>
+        </div>
+        <div class="feature-card" onclick="exportAction('email')">
+          <div class="feature-icon yellow"><i class="ti ti-mail"></i></div>
+          <div class="feature-name">Kirim via Email</div>
+          <div class="feature-desc">Email hasil report via Gmail (GAS)</div>
+        </div>
+        <div class="feature-card" onclick="exportAction('drive')">
+          <div class="feature-icon red"><i class="ti ti-brand-google-drive"></i></div>
+          <div class="feature-name">Simpan ke Drive</div>
+          <div class="feature-desc">Simpan langsung ke Google Drive</div>
+        </div>
+      </div>
+
+      <div class="card" id="export-config" style="display:none">
+        <div class="card-header">
+          <div class="card-title" id="export-config-title">Konfigurasi Export</div>
+        </div>
+        <div class="card-body" id="export-config-body"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════ HISTORY ═══════════ -->
+    <div class="view" id="view-history">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Riwayat Proses</div>
+            <div class="card-subtitle">Semua aktivitas dalam sesi ini</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="clearHistory()"><i class="ti ti-trash"></i> Hapus Riwayat</button>
+        </div>
+        <div class="card-body" id="full-history-list">
+          <div class="empty-state" style="padding: 40px;">
+            <i class="ti ti-history"></i>
+            <h3>Belum ada riwayat</h3>
+            <p>Aktivitas proses akan tercatat di sini</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>⚙️ Pengaturan GAS Backend</h3>
+    <p>Masukkan URL Google Apps Script (Web App) yang sudah di-deploy sebagai Web App.</p>
+
+    <div class="form-group">
+      <label>GAS Web App URL</label>
+      <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+      <div class="hint">Deploy GAS sebagai Web App → Execute as: Me → Access: Anyone</div>
+    </div>
+
+    <div class="form-group">
+      <label>Nama Spreadsheet (opsional)</label>
+      <input type="text" id="gas-sheet-name" placeholder="ExcelPro Data">
+      <div class="hint">Nama Google Spreadsheet yang akan digunakan sebagai database</div>
+    </div>
+
+    <div class="form-group">
+      <label>Email untuk Notifikasi (opsional)</label>
+      <input type="text" id="gas-email" placeholder="email@gmail.com">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeSettings()">Batal</button>
+      <button class="btn btn-ghost btn-sm" onclick="testConnection()"><i class="ti ti-plug"></i> Test Koneksi</button>
+      <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-check"></i> Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let state = {
+  gasUrl: localStorage.getItem('gasUrl') || '',
+  sheetName: localStorage.getItem('sheetName') || 'ExcelPro Data',
+  email: localStorage.getItem('gasEmail') || '',
+  files: [],           // { id, name, sheets:[], data:{sheetName:[rows]}, size, uploadedAt }
+  reports: [],
+  analyses: [],
+  discResults: null,
+  history: [],
+  stats: { files: 0, reports: 0, analyses: 0, discs: 0 },
+  selectedReport: 'summary',
+};
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════ */
+const viewTitles = {
+  dashboard: ['Dashboard', 'Ringkasan aktivitas dan file Excel Anda'],
+  upload: ['Upload File', 'Upload dan kelola file Excel Anda'],
+  report: ['Buat Report', 'Generate laporan dari data Excel'],
+  analysis: ['Analisa Data', 'Statistik dan analisis mendalam'],
+  discrepancy: ['Discrepancy Check', 'Bandingkan dan temukan perbedaan antar file'],
+  export: ['Export & Download', 'Export hasil ke berbagai format'],
+  history: ['Riwayat Proses', 'Log semua aktivitas dalam sesi ini'],
+};
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  document.querySelector(`.nav-item[onclick="showView('${id}')"]`).classList.add('active');
+  const [title, sub] = viewTitles[id] || ['', ''];
+  document.getElementById('viewTitle').textContent = title;
+  document.getElementById('viewSubtitle').textContent = sub;
+  if (id === 'upload' || id === 'report' || id === 'analysis' || id === 'discrepancy' || id === 'export') {
+    updateFileSelects();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════ */
+function openSettings() {
+  document.getElementById('gas-url-input').value = state.gasUrl;
+  document.getElementById('gas-sheet-name').value = state.sheetName;
+  document.getElementById('gas-email').value = state.email;
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settingsModal').classList.remove('open'); }
+
+function saveSettings() {
+  state.gasUrl = document.getElementById('gas-url-input').value.trim();
+  state.sheetName = document.getElementById('gas-sheet-name').value.trim() || 'ExcelPro Data';
+  state.email = document.getElementById('gas-email').value.trim();
+  localStorage.setItem('gasUrl', state.gasUrl);
+  localStorage.setItem('sheetName', state.sheetName);
+  localStorage.setItem('gasEmail', state.email);
+  closeSettings();
+  updateGasStatus();
+  toast('Pengaturan disimpan!', 'success');
+}
+
+async function testConnection() {
+  const url = document.getElementById('gas-url-input').value.trim();
+  if (!url) { toast('Masukkan URL GAS dulu', 'error'); return; }
+  toast('Testing koneksi...', 'info');
+  try {
+    const r = await gasCall('ping', {}, url);
+    if (r.status === 'ok') { toast('Koneksi berhasil! 🎉', 'success'); }
+    else { toast('GAS merespons tapi ada error: ' + (r.error || ''), 'error'); }
+  } catch(e) {
+    toast('Gagal konek: ' + e.message, 'error');
+  }
+}
+
+function updateGasStatus() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  const banner = document.getElementById('gas-banner');
+  if (state.gasUrl) {
+    dot.className = 'gas-status-dot connected';
+    txt.textContent = 'Terhubung ke GAS';
+    if (banner) banner.style.display = 'none';
+  } else {
+    dot.className = 'gas-status-dot';
+    txt.textContent = 'Belum terhubung ke GAS';
+    if (banner) banner.style.display = 'flex';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   GAS CALL
+═══════════════════════════════════════════ */
+async function gasCall(action, params = {}, urlOverride = null) {
+  const url = urlOverride || state.gasUrl;
+  if (!url) throw new Error('URL GAS belum diatur. Buka Settings.');
+  const body = { action, ...params };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
+}
+
+/* ═══════════════════════════════════════════
+   FILE HANDLING (LOCAL PARSE)
+═══════════════════════════════════════════ */
+function handleFileSelect(e) { processFiles(Array.from(e.target.files)); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateGasStatus();
+  renderDashboard();
+
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    processFiles(Array.from(e.dataTransfer.files));
+  });
+});
+
+function processFiles(files) {
+  const excelFiles = files.filter(f => /\.(xlsx|xls|csv)$/i.test(f.name));
+  if (!excelFiles.length) { toast('Pilih file .xlsx, .xls, atau .csv', 'error'); return; }
+  excelFiles.forEach(f => readExcelFile(f));
+}
+
+function readExcelFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      let data = {};
+      let sheets = [];
+      if (file.name.endsWith('.csv')) {
+        const csv = e.target.result;
+        const ws = XLSX.read(csv, { type: 'string' }).Sheets[XLSX.read(csv, { type: 'string' }).SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        sheets = ['Sheet1'];
+        data['Sheet1'] = rows;
+      } else {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        sheets = wb.SheetNames;
+        wb.SheetNames.forEach(sn => {
+          data[sn] = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1 });
+        });
+      }
+      const fileObj = {
+        id: Date.now() + Math.random(),
+        name: file.name,
+        size: file.size,
+        sheets,
+        data,
+        uploadedAt: new Date().toLocaleString('id-ID'),
+        status: 'queued',
+      };
+      state.files.push(fileObj);
+      state.stats.files = state.files.length;
+      addHistory('upload', `📥 File ditambahkan: ${file.name}`, 'orange');
+      renderFileQueue();
+      updateStats();
+      updateFileCountBadge();
+      toast(`File ${file.name} siap diupload`, 'success');
+    } catch(err) {
+      toast('Gagal baca file: ' + err.message, 'error');
+    }
+  };
+  file.name.endsWith('.csv') ? reader.readAsText(file) : reader.readAsArrayBuffer(file);
+}
+
+function renderFileQueue() {
+  const el = document.getElementById('file-queue');
+  const queued = state.files.filter(f => f.status === 'queued');
+  if (!queued.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:30px"><i class="ti ti-files"></i><h3>Antrian kosong</h3><p>Pilih atau drop file Excel di atas</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Nama File</th><th>Sheet</th><th>Ukuran</th><th>Status</th><th>Aksi</th></tr></thead>
+    <tbody>${queued.map(f => `
+      <tr>
+        <td><i class="ti ti-file-spreadsheet" style="color:var(--primary); margin-right:6px"></i>${f.name}</td>
+        <td>${f.sheets.map(s => `<span class="sheet-tab active" style="font-size:10px; padding:2px 8px;">${s}</span>`).join('')}</td>
+        <td>${formatSize(f.size)}</td>
+        <td><span class="badge badge-orange">Antrian</span></td>
+        <td>
+          <button class="btn btn-sm btn-outline" onclick="uploadSingleFile('${f.id}')"><i class="ti ti-upload"></i></button>
+          <button class="btn btn-sm btn-ghost" onclick="removeFile('${f.id}')"><i class="ti ti-trash" style="color:var(--red)"></i></button>
+        </td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function renderUploadedFiles() {
+  const el = document.getElementById('uploaded-files-list');
+  const uploaded = state.files.filter(f => f.status === 'uploaded');
+  if (!uploaded.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:30px"><i class="ti ti-database-off"></i><h3>Belum ada file terupload</h3></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Nama File</th><th>Sheet</th><th>Waktu</th><th>Status</th></tr></thead>
+    <tbody>${uploaded.map(f => `
+      <tr>
+        <td><i class="ti ti-file-spreadsheet" style="color:var(--accent); margin-right:6px"></i>${f.name}</td>
+        <td>${f.sheets.slice(0,3).map(s=>`<span class="badge badge-gray">${s}</span>`).join(' ')}${f.sheets.length>3?`+${f.sheets.length-3}`:''}</td>
+        <td>${f.uploadedAt}</td>
+        <td><span class="badge badge-green"><i class="ti ti-check"></i> Uploaded</span></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+async function uploadSingleFile(id) {
+  const f = state.files.find(x => x.id == id);
+  if (!f) return;
+  if (!state.gasUrl) { openSettings(); return; }
+  toast(`Mengupload ${f.name}...`, 'info');
+  try {
+    // Send each sheet's data to GAS
+    for (const sheetName of f.sheets) {
+      const rows = f.data[sheetName];
+      await gasCall('uploadSheet', {
+        fileName: f.name,
+        sheetName,
+        rows: rows.slice(0, 1000), // limit 1000 rows per call
+        targetSheet: state.sheetName,
+      });
+    }
+    f.status = 'uploaded';
+    addHistory('upload', `✅ Upload berhasil: ${f.name}`, 'green');
+    renderFileQueue();
+    renderUploadedFiles();
+    renderDashboardFiles();
+    toast(`${f.name} berhasil diupload ke GAS!`, 'success');
+  } catch(e) {
+    toast('Upload gagal: ' + e.message, 'error');
+    addHistory('error', `❌ Upload gagal: ${f.name} - ${e.message}`, 'red');
+  }
+}
+
+async function uploadAllFiles() {
+  const queued = state.files.filter(f => f.status === 'queued');
+  if (!queued.length) { toast('Tidak ada file dalam antrian', 'error'); return; }
+  if (!state.gasUrl) { openSettings(); return; }
+  for (const f of queued) await uploadSingleFile(f.id);
+}
+
+function clearQueue() {
+  state.files = state.files.filter(f => f.status !== 'queued');
+  renderFileQueue();
+  updateFileCountBadge();
+  toast('Antrian dikosongkan', 'info');
+}
+
+function removeFile(id) {
+  state.files = state.files.filter(f => f.id != id);
+  renderFileQueue();
+  updateFileCountBadge();
+}
+
+async function refreshFiles() {
+  if (!state.gasUrl) { openSettings(); return; }
+  toast('Refresh dari GAS...', 'info');
+  try {
+    const r = await gasCall('listFiles', { targetSheet: state.sheetName });
+    toast('Refresh berhasil', 'success');
+  } catch(e) { toast('Gagal: ' + e.message, 'error'); }
+}
+
+/* ═══════════════════════════════════════════
+   FILE SELECTS
+═══════════════════════════════════════════ */
+function updateFileSelects() {
+  const ids = ['report-file-select', 'analysis-file-select', 'disc-file-a', 'disc-file-b'];
+  ids.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-- Pilih file --</option>' +
+      state.files.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+    sel.value = cur;
+  });
+}
+
+function getFileById(id) { return state.files.find(f => f.id == id); }
+
+function getSheets(fileId) {
+  const f = getFileById(fileId);
+  return f ? f.sheets : [];
+}
+
+function getColumns(fileId, sheetName) {
+  const f = getFileById(fileId);
+  if (!f || !sheetName) return [];
+  const rows = f.data[sheetName];
+  return rows && rows[0] ? rows[0].map(String) : [];
+}
+
+// Auto-fill sheet & column selects on file change
+['report-file-select','analysis-file-select'].forEach(id => {
+  document.addEventListener('change', e => {
+    if (e.target.id === id) {
+      const fid = e.target.value;
+      const sheets = getSheets(fid);
+      const targets = {
+        'report-file-select': ['report-sheet-select', 'report-value-col', 'report-group-col'],
+        'analysis-file-select': ['analysis-sheet-select'],
+      };
+      const sheetSel = document.getElementById(targets[id][0]);
+      sheetSel.innerHTML = '<option value="">-- Pilih sheet --</option>' + sheets.map(s=>`<option>${s}</option>`).join('');
+      if (targets[id].length > 1) {
+        // Populate column selects
+        document.addEventListener('change', ev => {
+          if (ev.target.id === targets[id][0]) {
+            const cols = getColumns(fid, ev.target.value);
+            targets[id].slice(1).forEach(cid => {
+              const csel = document.getElementById(cid);
+              if (csel) {
+                csel.innerHTML = '<option value="">-- Otomatis --</option>' + cols.map(c=>`<option>${c}</option>`).join('');
+              }
+            });
+          }
+        });
+      }
+    }
+  });
+});
+
+// Discrepancy key selectors
+['disc-file-a','disc-file-b'].forEach(fid => {
+  const sheetId = fid === 'disc-file-a' ? 'disc-sheet-a' : 'disc-sheet-b';
+  const keyId = fid === 'disc-file-a' ? 'disc-key-a' : 'disc-key-b';
+  document.addEventListener('change', e => {
+    if (e.target.id === fid) {
+      const sheets = getSheets(e.target.value);
+      document.getElementById(sheetId).innerHTML = '<option value="">-- Pilih sheet --</option>' + sheets.map(s=>`<option>${s}</option>`).join('');
+    }
+    if (e.target.id === sheetId) {
+      const fVal = document.getElementById(fid).value;
+      const cols = getColumns(fVal, e.target.value);
+      document.getElementById(keyId).innerHTML = '<option value="">-- Pilih kolom kunci --</option>' + cols.map(c=>`<option>${c}</option>`).join('');
+    }
+  });
+});
+
+/* ═══════════════════════════════════════════
+   REPORT
+═══════════════════════════════════════════ */
+function selectReport(el, type) {
+  document.querySelectorAll('.report-opt').forEach(o => { o.classList.remove('selected'); o.querySelector('.check').innerHTML = ''; });
+  el.classList.add('selected');
+  el.querySelector('.check').innerHTML = '<i class="ti ti-check"></i>';
+  state.selectedReport = type;
+}
+
+async function generateReport() {
+  const fileId = document.getElementById('report-file-select').value;
+  const sheet = document.getElementById('report-sheet-select').value;
+  if (!fileId || !sheet) { toast('Pilih file dan sheet dulu', 'error'); return; }
+
+  const f = getFileById(fileId);
+  const rows = f.data[sheet];
+  if (!rows || rows.length < 2) { toast('Data terlalu sedikit', 'error'); return; }
+
+  toast('Membuat report...', 'info');
+
+  const headers = rows[0].map(String);
+  const dataRows = rows.slice(1);
+  const valColName = document.getElementById('report-value-col').value;
+  const groupColName = document.getElementById('report-group-col').value;
+
+  let result = {};
+  const type = state.selectedReport;
+
+  if (type === 'summary') {
+    result = buildSummary(headers, dataRows, valColName);
+  } else if (type === 'pivot') {
+    result = buildPivot(headers, dataRows, groupColName, valColName);
+  } else if (type === 'comparison') {
+    result = buildComparison(headers, dataRows);
+  } else {
+    result = buildSummary(headers, dataRows, valColName);
+  }
+
+  // Try to send to GAS if connected
+  if (state.gasUrl) {
+    try {
+      await gasCall('saveReport', { reportType: type, fileName: f.name, sheetName: sheet, result });
+    } catch(e) { /* ignore, show result anyway */ }
+  }
+
+  state.stats.reports++;
+  updateStats();
+  addHistory('report', `📊 Report dibuat: ${type} dari ${f.name}`, 'blue');
+  renderReportResult(result, type, f.name, sheet);
+  toast('Report berhasil dibuat!', 'success');
+}
+
+function buildSummary(headers, rows, valCol) {
+  const numCols = headers.filter((h, i) => rows.some(r => !isNaN(parseFloat(r[i]))));
+  const stats = {};
+  headers.forEach((h, ci) => {
+    const vals = rows.map(r => parseFloat(r[ci])).filter(v => !isNaN(v));
+    if (vals.length > 0) {
+      const sum = vals.reduce((a,b)=>a+b,0);
+      stats[h] = {
+        count: vals.length,
+        sum: sum.toFixed(2),
+        avg: (sum/vals.length).toFixed(2),
+        min: Math.min(...vals).toFixed(2),
+        max: Math.max(...vals).toFixed(2),
+      };
+    }
+  });
+  return { type: 'summary', totalRows: rows.length, stats };
+}
+
+function buildPivot(headers, rows, groupCol, valCol) {
+  const gIdx = headers.indexOf(groupCol);
+  const vIdx = headers.indexOf(valCol);
+  if (gIdx < 0) return buildSummary(headers, rows, valCol);
+  const groups = {};
+  rows.forEach(r => {
+    const key = String(r[gIdx] || '(kosong)');
+    const val = vIdx >= 0 ? parseFloat(r[vIdx]) || 0 : 1;
+    if (!groups[key]) groups[key] = { count: 0, sum: 0 };
+    groups[key].count++;
+    groups[key].sum += val;
+  });
+  return { type: 'pivot', groupCol, valCol, groups };
+}
+
+function buildComparison(headers, rows) {
+  const numHeaders = headers.filter((h, i) => rows.some(r => !isNaN(parseFloat(r[i]))));
+  return { type: 'comparison', headers, numHeaders, totalRows: rows.length };
+}
+
+function renderReportResult(result, type, fileName, sheet) {
+  const el = document.getElementById('report-result');
+  const body = document.getElementById('report-result-body');
+  const meta = document.getElementById('report-result-meta');
+  meta.textContent = `${type} · ${fileName} · Sheet: ${sheet} · ${new Date().toLocaleString('id-ID')}`;
+  el.style.display = 'block';
+
+  if (type === 'summary') {
+    const cols = Object.entries(result.stats);
+    if (!cols.length) { body.innerHTML = '<p style="color:var(--text2)">Tidak ada kolom numerik ditemukan</p>'; return; }
+    body.innerHTML = `
+      <div class="kv-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px,1fr))">
+        ${cols.map(([col, s]) => `
+          <div class="kv-item">
+            <div class="kv-key">${col}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;">
+              ${[['Total', s.sum],['Avg', s.avg],['Min', s.min],['Max', s.max]].map(([k,v])=>`
+                <div><div style="font-size:10px; color:var(--text3)">${k}</div><div style="font-size:14px; font-weight:700">${parseFloat(v).toLocaleString('id-ID')}</div></div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="margin-top:14px; font-size:13px; color:var(--text2)">Total baris data: <strong>${result.totalRows.toLocaleString()}</strong></div>`;
+  } else if (type === 'pivot') {
+    const entries = Object.entries(result.groups);
+    body.innerHTML = `
+      <div class="table-wrap"><table>
+        <thead><tr><th>${result.groupCol || 'Kategori'}</th><th>Jumlah Baris</th><th>${result.valCol || 'Total'}</th></tr></thead>
+        <tbody>${entries.sort((a,b)=>b[1].sum-a[1].sum).map(([k,v]) => `
+          <tr><td>${k}</td><td>${v.count.toLocaleString()}</td><td>${v.sum.toLocaleString('id-ID')}</td></tr>
+        `).join('')}</tbody>
+      </table></div>`;
+  } else {
+    body.innerHTML = `<div class="kv-item"><div class="kv-key">Total Baris</div><div class="kv-val">${result.totalRows}</div></div>
+      <div style="margin-top:12px; font-size:13px; color:var(--text2)">Kolom numerik: ${result.numHeaders?.join(', ') || '-'}</div>`;
+  }
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function downloadReport(format) {
+  toast('Mempersiapkan download...', 'info');
+  setTimeout(() => toast('Fitur download memerlukan GAS terhubung untuk format ' + format, 'info'), 500);
+}
+
+/* ═══════════════════════════════════════════
+   ANALYSIS
+═══════════════════════════════════════════ */
+async function runAnalysis() {
+  const fileId = document.getElementById('analysis-file-select').value;
+  const sheet = document.getElementById('analysis-sheet-select').value;
+  const type = document.getElementById('analysis-type').value;
+  if (!fileId || !sheet) { toast('Pilih file dan sheet dulu', 'error'); return; }
+
+  const f = getFileById(fileId);
+  const rows = f.data[sheet];
+  const headers = rows[0].map(String);
+  const dataRows = rows.slice(1);
+
+  let html = '';
+  if (type === 'descriptive') {
+    html = renderDescriptive(headers, dataRows);
+  } else if (type === 'missing') {
+    html = renderMissing(headers, dataRows);
+  } else if (type === 'duplicate') {
+    html = renderDuplicate(dataRows);
+  } else if (type === 'outlier') {
+    html = renderOutlier(headers, dataRows);
+  } else {
+    html = `<p style="color:var(--text2)">Analisa <strong>${type}</strong> tersedia via GAS backend. Pastikan GAS sudah terhubung.</p>`;
+    if (state.gasUrl) {
+      try {
+        const r = await gasCall('analyze', { fileName: f.name, sheetName: sheet, type, rows: dataRows.slice(0,500) });
+        html = `<pre style="font-size:12px; overflow:auto;">${JSON.stringify(r, null, 2)}</pre>`;
+      } catch(e) { html += `<p style="color:var(--red)">GAS Error: ${e.message}</p>`; }
+    }
+  }
+
+  document.getElementById('analysis-result-meta').textContent = `${type} · ${f.name} · ${sheet}`;
+  document.getElementById('analysis-result-body').innerHTML = html;
+  document.getElementById('analysis-result').style.display = 'block';
+
+  // Preview
+  const prev = document.getElementById('analysis-preview');
+  prev.innerHTML = `<div class="table-wrap" style="max-height:200px; overflow:auto"><table>
+    <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${dataRows.slice(0,5).map(r=>`<tr>${headers.map((_,i)=>`<td>${r[i]??''}</td>`).join('')}</tr>`).join('')}
+    </tbody></table></div><p style="font-size:11px; color:var(--text3); margin-top:8px">Menampilkan 5 baris pertama dari ${dataRows.length} baris</p>`;
+
+  state.stats.analyses++;
+  updateStats();
+  addHistory('analysis', `📈 Analisa ${type}: ${f.name}`, 'purple');
+  toast('Analisa selesai!', 'success');
+}
+
+function renderDescriptive(headers, rows) {
+  const cols = [];
+  headers.forEach((h, i) => {
+    const vals = rows.map(r => parseFloat(r[i])).filter(v => !isNaN(v));
+    if (vals.length) {
+      const sorted = [...vals].sort((a,b)=>a-b);
+      const sum = vals.reduce((a,b)=>a+b,0);
+      const mean = sum/vals.length;
+      const variance = vals.reduce((acc,v)=>acc+(v-mean)**2,0)/vals.length;
+      cols.push({ h, count: vals.length, sum: sum.toFixed(2), mean: mean.toFixed(2), std: Math.sqrt(variance).toFixed(2), min: sorted[0].toFixed(2), q1: sorted[Math.floor(sorted.length*0.25)].toFixed(2), median: sorted[Math.floor(sorted.length*0.5)].toFixed(2), q3: sorted[Math.floor(sorted.length*0.75)].toFixed(2), max: sorted[sorted.length-1].toFixed(2) });
+    }
+  });
+  if (!cols.length) return '<p style="color:var(--text2)">Tidak ada kolom numerik</p>';
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Kolom</th><th>Count</th><th>Sum</th><th>Mean</th><th>Std Dev</th><th>Min</th><th>Q1</th><th>Median</th><th>Q3</th><th>Max</th></tr></thead>
+    <tbody>${cols.map(c=>`<tr>
+      <td style="font-weight:600">${c.h}</td><td>${c.count}</td><td>${(+c.sum).toLocaleString()}</td>
+      <td>${c.mean}</td><td>${c.std}</td><td>${c.min}</td><td>${c.q1}</td><td>${c.median}</td><td>${c.q3}</td><td>${c.max}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderMissing(headers, rows) {
+  const missing = headers.map((h, i) => {
+    const m = rows.filter(r => r[i] === null || r[i] === undefined || r[i] === '').length;
+    return { h, missing: m, pct: ((m/rows.length)*100).toFixed(1) };
+  });
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Kolom</th><th>Missing</th><th>Persentase</th><th>Status</th></tr></thead>
+    <tbody>${missing.map(m=>`<tr>
+      <td style="font-weight:600">${m.h}</td><td>${m.missing}</td>
+      <td><div style="display:flex; align-items:center; gap:8px;">
+        ${m.pct}%
+        <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${m.pct}%; background:${+m.pct>10?'var(--red)':'var(--accent)'}"></div></div>
+      </div></td>
+      <td>${m.missing===0?'<span class="badge badge-green">Lengkap</span>':+m.pct>30?'<span class="badge badge-red">Kritis</span>':'<span class="badge badge-yellow">Perlu Perhatian</span>'}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderDuplicate(rows) {
+  const keys = rows.map(r => JSON.stringify(r));
+  const seen = {}, dups = [];
+  keys.forEach((k, i) => {
+    if (seen[k] !== undefined) dups.push(i+2);
+    else seen[k] = i+2;
+  });
+  return `<div class="kv-grid">
+    <div class="kv-item"><div class="kv-key">Total Baris</div><div class="kv-val">${rows.length}</div></div>
+    <div class="kv-item"><div class="kv-key">Baris Unik</div><div class="kv-val" style="color:var(--accent)">${rows.length - dups.length}</div></div>
+    <div class="kv-item"><div class="kv-key">Duplikat</div><div class="kv-val" style="color:var(--red)">${dups.length}</div></div>
+    <div class="kv-item"><div class="kv-key">% Duplikat</div><div class="kv-val">${((dups.length/rows.length)*100).toFixed(1)}%</div></div>
+  </div>
+  ${dups.length > 0 ? `<p style="margin-top:12px; font-size:13px; color:var(--text2)">Baris duplikat di baris Excel: ${dups.slice(0,20).join(', ')}${dups.length>20?'...':''}</p>` : '<p style="color:var(--accent); margin-top:12px"><i class="ti ti-check"></i> Tidak ada duplikasi!</p>'}`;
+}
+
+function renderOutlier(headers, rows) {
+  const results = [];
+  headers.forEach((h, i) => {
+    const vals = rows.map(r => parseFloat(r[i])).filter(v => !isNaN(v));
+    if (vals.length > 4) {
+      const sorted = [...vals].sort((a,b)=>a-b);
+      const q1 = sorted[Math.floor(sorted.length*0.25)];
+      const q3 = sorted[Math.floor(sorted.length*0.75)];
+      const iqr = q3 - q1;
+      const lower = q1 - 1.5*iqr, upper = q3 + 1.5*iqr;
+      const outliers = vals.filter(v => v < lower || v > upper);
+      results.push({ h, outliers: outliers.length, lower: lower.toFixed(2), upper: upper.toFixed(2) });
+    }
+  });
+  if (!results.length) return '<p style="color:var(--text2)">Tidak cukup data numerik</p>';
+  return `<div class="table-wrap"><table>
+    <thead><tr><th>Kolom</th><th>Batas Bawah</th><th>Batas Atas</th><th>Outlier</th><th>Status</th></tr></thead>
+    <tbody>${results.map(r=>`<tr>
+      <td style="font-weight:600">${r.h}</td><td>${r.lower}</td><td>${r.upper}</td><td>${r.outliers}</td>
+      <td>${r.outliers===0?'<span class="badge badge-green">Normal</span>':'<span class="badge badge-red">'+r.outliers+' Outlier</span>'}</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function downloadAnalysis() { toast('Export analisa ke Excel/CSV memerlukan GAS backend', 'info'); }
+
+/* ═══════════════════════════════════════════
+   DISCREPANCY
+═══════════════════════════════════════════ */
+let _discAllRows = [];
+
+function runDiscrepancy() {
+  const fAid = document.getElementById('disc-file-a').value;
+  const fBid = document.getElementById('disc-file-b').value;
+  const shA = document.getElementById('disc-sheet-a').value;
+  const shB = document.getElementById('disc-sheet-b').value;
+  const keyA = document.getElementById('disc-key-a').value;
+  const keyB = document.getElementById('disc-key-b').value;
+  const tolerance = parseFloat(document.getElementById('disc-tolerance').value) || 0;
+  const compareCols = document.getElementById('disc-compare-cols').value.split(',').map(s=>s.trim()).filter(Boolean);
+
+  if (!fAid || !fBid || !shA || !shB) { toast('Pilih kedua file dan sheet', 'error'); return; }
+  if (!keyA || !keyB) { toast('Pilih kolom kunci untuk kedua file', 'error'); return; }
+
+  const fA = getFileById(fAid), fB = getFileById(fBid);
+  const rowsA = fA.data[shA], rowsB = fB.data[shB];
+  const headA = rowsA[0].map(String), headB = rowsB[0].map(String);
+  const kiA = headA.indexOf(keyA), kiB = headB.indexOf(keyB);
+
+  // Build maps
+  const mapA = {}, mapB = {};
+  rowsA.slice(1).forEach(r => { if (r[kiA] !== undefined) mapA[String(r[kiA])] = r; });
+  rowsB.slice(1).forEach(r => { if (r[kiB] !== undefined) mapB[String(r[kiB])] = r; });
+
+  const cols = compareCols.length ? compareCols : headA.filter(h => h !== keyA && headB.includes(h));
+
+  const results = [];
+  const allKeys = new Set([...Object.keys(mapA), ...Object.keys(mapB)]);
+
+  allKeys.forEach(key => {
+    const rA = mapA[key], rB = mapB[key];
+    if (!rA) { results.push({ key, status: 'missing_a', diffs: [], valA: '-', valB: String(rB?.join(', ')||'') }); return; }
+    if (!rB) { results.push({ key, status: 'missing_b', diffs: [], valA: String(rA?.join(', ')||''), valB: '-' }); return; }
+
+    const diffs = [];
+    cols.forEach(col => {
+      const iA = headA.indexOf(col), iB = headB.indexOf(col);
+      if (iA < 0 || iB < 0) return;
+      const vA = rA[iA], vB = rB[iB];
+      const nA = parseFloat(vA), nB = parseFloat(vB);
+      if (!isNaN(nA) && !isNaN(nB)) {
+        const pct = nA !== 0 ? Math.abs((nA-nB)/nA*100) : Math.abs(nB)*100;
+        if (pct > tolerance) diffs.push({ col, valA: vA, valB: vB, diff: (nA-nB).toFixed(2), pct: pct.toFixed(1) });
+      } else if (String(vA) !== String(vB)) {
+        diffs.push({ col, valA: vA, valB: vB, diff: 'Text berbeda', pct: '-' });
+      }
+    });
+    results.push({ key, status: diffs.length ? 'diff' : 'match', diffs });
+  });
+
+  const total = results.length;
+  const match = results.filter(r=>r.status==='match').length;
+  const diff = results.filter(r=>r.status==='diff').length;
+  const missing = results.filter(r=>r.status==='missing_a'||r.status==='missing_b').length;
+
+  document.getElementById('disc-total').textContent = total;
+  document.getElementById('disc-match').textContent = match;
+  document.getElementById('disc-diff').textContent = diff;
+  document.getElementById('disc-missing').textContent = missing;
+  document.getElementById('disc-result').style.display = 'block';
+
+  _discAllRows = results;
+  state.discResults = results;
+  state.stats.discs += diff + missing;
+
+  renderDiscTable(results);
+  addHistory('disc', `🔍 Discrepancy: ${diff} beda, ${missing} missing dari ${total} data`, 'red');
+  updateStats();
+  toast(`Selesai! Ditemukan ${diff} perbedaan, ${missing} missing`, diff>0?'error':'success');
+}
+
+function renderDiscTable(rows) {
+  const wrap = document.getElementById('disc-table-wrap');
+  if (!rows.length) { wrap.innerHTML = '<p style="padding:20px; color:var(--text2)">Tidak ada data</p>'; return; }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Key</th><th>Status</th><th>Detail Perbedaan</th></tr></thead>
+    <tbody>${rows.slice(0,500).map(r=>`<tr>
+      <td style="font-weight:600; font-family:monospace">${r.key}</td>
+      <td>${r.status==='match'?'<span class="badge badge-green">Match</span>':r.status==='diff'?'<span class="badge badge-red">Berbeda</span>':'<span class="badge badge-yellow">Missing</span>'}</td>
+      <td>${r.diffs.length?r.diffs.map(d=>`<span style="font-size:11px; margin-right:8px"><strong>${d.col}</strong>: ${d.valA}→${d.valB} (${d.diff}${d.pct!=='-'?', '+d.pct+'%':''})</span>`).join(''):'<span style="color:var(--text3); font-size:12px">${r.status==="missing_a"?"Tidak ada di File A":r.status==="missing_b"?"Tidak ada di File B":"Semua kolom cocok"}</span>'}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function filterDiscResult() {
+  const filter = document.getElementById('disc-filter').value;
+  const search = document.getElementById('disc-search-input').value.toLowerCase();
+  let rows = _discAllRows;
+  if (filter !== 'all') {
+    if (filter === 'diff') rows = rows.filter(r=>r.status==='diff');
+    else if (filter === 'missing') rows = rows.filter(r=>r.status==='missing_a'||r.status==='missing_b');
+    else rows = rows.filter(r=>r.status==='match');
+  }
+  if (search) rows = rows.filter(r=>r.key.toLowerCase().includes(search));
+  renderDiscTable(rows);
+}
+
+function downloadDiscrepancy() {
+  if (!state.discResults) { toast('Belum ada hasil discrepancy', 'error'); return; }
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['KEY', 'STATUS', 'KOLOM', 'NILAI A', 'NILAI B', 'SELISIH', '%'],
+    ...state.discResults.flatMap(r => r.diffs.length
+      ? r.diffs.map(d => [r.key, r.status, d.col, d.valA, d.valB, d.diff, d.pct])
+      : [[r.key, r.status, '-', '-', '-', '-', '-']])
+  ]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Discrepancy');
+  XLSX.writeFile(wb, `discrepancy_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('Download berhasil!', 'success');
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════════ */
+function exportAction(type) {
+  const configs = {
+    xlsx: { title: 'Export ke XLSX', body: renderExportXLSX() },
+    csv: { title: 'Export ke CSV', body: renderExportCSV() },
+    sheets: { title: 'Kirim ke Google Sheets', body: renderExportSheets() },
+    email: { title: 'Kirim via Email', body: renderExportEmail() },
+    drive: { title: 'Simpan ke Google Drive', body: renderExportDrive() },
+    pdf: { title: 'Export PDF', body: '<p style="color:var(--text2)">Print halaman ini menggunakan Ctrl+P / Cmd+P</p>' },
+  };
+  const c = configs[type];
+  document.getElementById('export-config-title').textContent = c.title;
+  document.getElementById('export-config-body').innerHTML = c.body;
+  document.getElementById('export-config').style.display = 'block';
+}
+
+function renderExportXLSX() {
+  const fileOpts = state.files.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
+  return `<div class="form-group"><label>Pilih File</label><select id="export-sel-file">${fileOpts}</select></div>
+    <div class="form-group"><label>Nama File Output</label><input type="text" id="export-filename" value="export_${new Date().toISOString().slice(0,10)}"></div>
+    <button class="btn btn-primary" onclick="doExportXLSX()"><i class="ti ti-download"></i> Download XLSX</button>`;
+}
+
+function doExportXLSX() {
+  const fid = document.getElementById('export-sel-file')?.value;
+  const fname = document.getElementById('export-filename')?.value || 'export';
+  const f = getFileById(fid);
+  if (!f) { toast('Pilih file dulu', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+  f.sheets.forEach(sn => {
+    const ws = XLSX.utils.aoa_to_sheet(f.data[sn]);
+    XLSX.utils.book_append_sheet(wb, ws, sn);
+  });
+  XLSX.writeFile(wb, fname + '.xlsx');
+  addHistory('export', `📥 Export XLSX: ${f.name}`, 'green');
+  toast('Download berhasil!', 'success');
+}
+
+function renderExportCSV() {
+  const fileOpts = state.files.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
+  return `<div class="form-group"><label>Pilih File</label><select id="export-csv-file">${fileOpts}</select></div>
+    <div class="form-group"><label>Sheet</label><select id="export-csv-sheet"><option>-- Pilih sheet --</option></select></div>
+    <button class="btn btn-primary" onclick="doExportCSV()"><i class="ti ti-file-text"></i> Download CSV</button>
+    <script>document.getElementById('export-csv-file').addEventListener('change',function(){const f=getFileById(this.value);document.getElementById('export-csv-sheet').innerHTML=f?f.sheets.map(s=>'<option>'+s+'</option>').join(''):''});<\/script>`;
+}
+
+function doExportCSV() {
+  const fid = document.getElementById('export-csv-file')?.value;
+  const sn = document.getElementById('export-csv-sheet')?.value;
+  const f = getFileById(fid);
+  if (!f || !sn) { toast('Pilih file dan sheet', 'error'); return; }
+  const csv = f.data[sn].map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${f.name.replace(/\.[^.]+$/,'')}_${sn}.csv`;
+  a.click();
+  toast('CSV berhasil didownload!', 'success');
+}
+
+function renderExportSheets() {
+  return `<p style="font-size:13px; color:var(--text2); margin-bottom:16px">Data akan dikirim ke Google Sheets via GAS backend</p>
+    <div class="form-group"><label>Nama Sheet Tujuan</label><input type="text" id="export-sheet-name" value="${state.sheetName}"></div>
+    <button class="btn btn-accent" onclick="doExportSheets()"><i class="ti ti-brand-google"></i> Kirim ke Sheets</button>`;
+}
+
+async function doExportSheets() {
+  if (!state.gasUrl) { openSettings(); return; }
+  const name = document.getElementById('export-sheet-name')?.value || state.sheetName;
+  toast('Mengirim ke Google Sheets...', 'info');
+  try {
+    const f = state.files[0];
+    if (!f) { toast('Upload file dulu', 'error'); return; }
+    await gasCall('exportToSheets', { fileName: f.name, sheetName: name, data: f.data });
+    toast('Berhasil dikirim ke Google Sheets!', 'success');
+  } catch(e) { toast('Gagal: ' + e.message, 'error'); }
+}
+
+function renderExportEmail() {
+  return `<div class="form-group"><label>Email Tujuan</label><input type="email" id="export-email" value="${state.email}"></div>
+    <div class="form-group"><label>Subject</label><input type="text" id="export-subject" value="Report dari ExcelPro Manager"></div>
+    <div class="form-group"><label>Pesan</label><input type="text" id="export-message" value="Terlampir report Excel dari ExcelPro Manager."></div>
+    <button class="btn btn-primary" onclick="doExportEmail()"><i class="ti ti-send"></i> Kirim Email</button>`;
+}
+
+async function doExportEmail() {
+  if (!state.gasUrl) { openSettings(); return; }
+  const email = document.getElementById('export-email')?.value;
+  const subject = document.getElementById('export-subject')?.value;
+  const message = document.getElementById('export-message')?.value;
+  if (!email) { toast('Masukkan email tujuan', 'error'); return; }
+  toast('Mengirim email...', 'info');
+  try {
+    await gasCall('sendEmail', { to: email, subject, message });
+    addHistory('export', `📧 Email dikirim ke ${email}`, 'blue');
+    toast('Email berhasil dikirim!', 'success');
+  } catch(e) { toast('Gagal kirim email: ' + e.message, 'error'); }
+}
+
+function renderExportDrive() {
+  return `<div class="form-group"><label>Nama File di Drive</label><input type="text" id="export-drive-name" value="ExcelPro_${new Date().toISOString().slice(0,10)}"></div>
+    <div class="form-group"><label>Folder (opsional)</label><input type="text" id="export-drive-folder" placeholder="ExcelPro Reports"></div>
+    <button class="btn btn-primary" onclick="doExportDrive()"><i class="ti ti-brand-google-drive"></i> Simpan ke Drive</button>`;
+}
+
+async function doExportDrive() {
+  if (!state.gasUrl) { openSettings(); return; }
+  toast('Menyimpan ke Drive...', 'info');
+  try {
+    const name = document.getElementById('export-drive-name')?.value;
+    const folder = document.getElementById('export-drive-folder')?.value;
+    await gasCall('saveToDrive', { fileName: name, folder });
+    addHistory('export', `💾 Disimpan ke Drive: ${name}`, 'green');
+    toast('Berhasil disimpan ke Google Drive!', 'success');
+  } catch(e) { toast('Gagal: ' + e.message, 'error'); }
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD & HISTORY
+═══════════════════════════════════════════ */
+function renderDashboard() {
+  renderDashboardFiles();
+  renderRecentHistory();
+  updateStats();
+}
+
+function renderDashboardFiles() {
+  const el = document.getElementById('dash-file-list');
+  if (!state.files.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:40px"><i class="ti ti-file-x"></i><h3>Belum ada file</h3><p>Upload file Excel terlebih dahulu</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Nama File</th><th>Sheet</th><th>Status</th><th>Waktu</th><th>Aksi</th></tr></thead>
+    <tbody>${state.files.map(f=>`<tr>
+      <td><i class="ti ti-file-spreadsheet" style="color:var(--primary); margin-right:6px"></i>${f.name}</td>
+      <td>${f.sheets.length} sheet${f.sheets.length>1?'s':''}</td>
+      <td>${f.status==='uploaded'?'<span class="badge badge-green">Uploaded</span>':'<span class="badge badge-orange">Antrian</span>'}</td>
+      <td style="font-size:12px; color:var(--text2)">${f.uploadedAt}</td>
+      <td><button class="btn btn-sm btn-outline" onclick="showView('report')"><i class="ti ti-file-analytics"></i></button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function addHistory(type, message, color='gray') {
+  state.history.unshift({ type, message, color, time: new Date().toLocaleTimeString('id-ID') });
+  renderRecentHistory();
+  renderFullHistory();
+}
+
+function renderRecentHistory() {
+  const el = document.getElementById('recent-history');
+  const items = state.history.slice(0, 5);
+  if (!items.length) { el.innerHTML = `<div class="empty-state" style="padding:30px 20px"><i class="ti ti-inbox"></i><h3>Belum ada aktivitas</h3></div>`; return; }
+  el.innerHTML = items.map(h=>`
+    <div class="history-item">
+      <div class="history-info">
+        <div class="history-name">${h.message}</div>
+        <div class="history-meta">${h.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderFullHistory() {
+  const el = document.getElementById('full-history-list');
+  if (!state.history.length) { el.innerHTML = `<div class="empty-state" style="padding:40px"><i class="ti ti-history"></i><h3>Belum ada riwayat</h3></div>`; return; }
+  el.innerHTML = state.history.map(h=>`
+    <div class="history-item">
+      <div class="history-info">
+        <div class="history-name">${h.message}</div>
+        <div class="history-meta">${h.time}</div>
+      </div>
+    </div>`).join('');
+}
+
+function clearHistory() { state.history = []; renderRecentHistory(); renderFullHistory(); toast('Riwayat dihapus', 'info'); }
+
+function updateStats() {
+  document.getElementById('stat-files').textContent = state.files.length;
+  document.getElementById('stat-reports').textContent = state.stats.reports;
+  document.getElementById('stat-analyses').textContent = state.stats.analyses;
+  document.getElementById('stat-discs').textContent = state.stats.discs;
+  document.getElementById('file-count-badge').textContent = state.files.length;
+  renderDashboardFiles();
+}
+
+function updateFileCountBadge() {
+  document.getElementById('file-count-badge').textContent = state.files.length;
+}
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1024/1024).toFixed(1) + ' MB';
+}
+
+function toast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icon = { success:'ti-check', error:'ti-x', info:'ti-info-circle' }[type] || 'ti-bell';
+  t.innerHTML = `<i class="ti ${icon}"></i>${msg}`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 0.4s'; setTimeout(()=>t.remove(), 400); }, 3500);
+}
+
+// Close modal on backdrop click
+document.getElementById('settingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSettings();
+});
+</script>
+</body>
+</html>
