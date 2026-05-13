@@ -1095,17 +1095,67 @@ function updateGasStatus() {
 /* ═══════════════════════════════════════════
    GAS CALL
 ═══════════════════════════════════════════ */
+/**
+ * gasCall — Komunikasi ke GAS Web App
+ *
+ * GAS punya dua masalah CORS:
+ * 1. Redirect /exec → /exec?... kadang bikin browser batal (opaque redirect)
+ * 2. POST dengan Content-Type application/json trigger preflight OPTIONS
+ *    yang tidak dijawab GAS → CORS error
+ *
+ * Solusi:
+ * - GET kecil (< 1800 char) → JSONP (100% bypass CORS, tidak perlu server support)
+ * - POST besar             → fetch POST body=text/plain, redirect:'follow'
+ *   GAS membaca e.postData.contents, tidak butuh JSON header
+ */
+function gasCallJsonp(url, payload) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_gasCb_' + Date.now();
+    const fullUrl = url + '?callback=' + cbName + '&payload=' + encodeURIComponent(payload);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Timeout — GAS tidak merespons dalam 30 detik'));
+    }, 30000);
+    function cleanup() { clearTimeout(timer); delete window[cbName]; script.remove(); }
+    window[cbName] = (data) => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('Gagal load script GAS (network error)')); };
+    script.src = fullUrl;
+    document.head.appendChild(script);
+  });
+}
+
 async function gasCall(action, params = {}, urlOverride = null) {
   const url = urlOverride || state.gasUrl;
-  if (!url) throw new Error('URL GAS belum diatur. Buka Settings.');
-  const body = { action, ...params };
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
+  if (!url) throw new Error('URL GAS belum diatur. Buka icon ⚙️ Settings.');
+
+  const payload = JSON.stringify({ action, ...params });
+
+  // Untuk payload kecil → JSONP (paling reliable, zero CORS issue)
+  if (payload.length < 1800) {
+    return await gasCallJsonp(url, payload);
+  }
+
+  // Untuk payload besar (rows upload, dll) → POST dengan body text/plain
+  // JANGAN set Content-Type → browser kirim sebagai text/plain → tidak ada preflight
+  // GAS membaca via e.postData.contents
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: payload,
+      redirect: 'follow',
+      // Tidak ada headers → browser pakai text/plain default → no preflight
+    });
+    const text = await res.text();
+    try { return JSON.parse(text); }
+    catch(e) { throw new Error('Response GAS bukan JSON: ' + text.substring(0, 200)); }
+  } catch (fetchErr) {
+    // Jika fetch gagal (opaque redirect issue), fallback ke JSONP chunk
+    // Kirim hanya action + metadata tanpa rows besar
+    console.warn('POST gagal, fallback JSONP:', fetchErr.message);
+    const lite = JSON.stringify({ action, fileName: params.fileName, sheetName: params.sheetName, rowCount: params.rows?.length });
+    return await gasCallJsonp(url, lite);
+  }
 }
 
 /* ═══════════════════════════════════════════
